@@ -10,7 +10,8 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   // 获取当前目录路径
   const directoryPath = __dirname;
-  const whiteList = ['index.html', 'server.js', 'start.bat']
+  const whiteFileList = ['index.html', 'server.js', 'start.bat','.gitignore', '.gitattributes']
+  const whiteFolderList = ['.git']
   const list = [];
 
   // 递归读取文件夹下的所有文件
@@ -20,9 +21,10 @@ const server = http.createServer((req, res) => {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
       if (stat && stat.isDirectory()) {
+        if (whiteFolderList.includes(file)) return;
         readDirSync(filePath, list, path.join(parentPath, file));
       } else {
-        if (whiteList.includes(file)) return;
+        if (whiteFileList.includes(file)) return;
         list.push(path.join(parentPath, file));
       }
     });

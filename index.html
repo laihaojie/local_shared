@@ -15,7 +15,7 @@
       data.forEach(file => {
         const fileElement = document.createElement('div');
         fileElement.innerHTML = `
-          <a href="http://lu:666/${file}" download="${file}">${file}</a>
+          <a href="http://lu:666/${file}" download="${file}">${file.replace('shared\\','')}</a>
         `;
         fileList.appendChild(fileElement);
       });
