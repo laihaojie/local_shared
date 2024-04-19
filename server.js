@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   // 获取当前目录路径
   const directoryPath = __dirname;
-  const whiteFileList = ['index.html', 'server.js', 'start.bat', '.gitignore', '.gitattributes', 'template.html']
+  const whiteFileList = ['index.html', 'server.js', 'start.bat', '.gitignore', '.gitattributes', 'template.html', 'README.md']
   const whiteFolderList = ['.git']
   const list = [];
 
@@ -76,6 +76,10 @@ server.listen(PORT, () => {
   const indexContent = templateContent.replaceAll('localhost', ip)
   fs.writeFileSync(indexPath, indexContent);
 
+  const sharedPath = path.join(__dirname, 'shared');
+  if (!fs.existsSync(sharedPath)) {
+    fs.mkdirSync(sharedPath);
+  }
 
   exec('serve -p 666');
 });
