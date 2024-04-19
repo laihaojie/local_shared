@@ -23,4 +23,5 @@ or
 执行start.bat文件
 
 ## 最后
-将要共享的文件放入shared文件夹中
+将要共享的文件放入shared文件夹中  访问 http://localhost:666 即可访问
+
