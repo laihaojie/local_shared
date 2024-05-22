@@ -5,10 +5,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    #uploadDom {
+      margin-top: 10px;
+      width: 100px;
+      height: 100px;
+      border: 1px dashed #000;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
 
 <body>
   <a href="http://localhost:666">分享内网地址 http://localhost:666</a>
+  <div id="uploadDom">文件拖到 <br /> 此处上传</div>
   <div style="margin-top: 12px;" id="fileList"></div>
   <script>
     const fileList = document.getElementById('fileList');
@@ -23,6 +36,29 @@
           fileList.appendChild(fileElement);
         });
       });
+
+
+
+    const uploadDom = document.getElementById('uploadDom');
+    uploadDom.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    uploadDom.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+      const formData = new FormData();
+      for (let i = 0; i < files.length; i++) {
+        formData.append('file', files[i]);
+      }
+      fetch('http://localhost:665', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          // window.location.reload();
+        });
+    });
   </script>
 </body>
 
