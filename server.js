@@ -33,7 +33,25 @@ app.get('/', async (req, res) => {
         readDirSync(filePath, list, path.join(parentPath, file));
       } else {
         if (whiteFileList.includes(file)) return;
-        list.push(path.join(parentPath, file));
+
+        // 获取文件大小 格式化为 KB MB GB TB
+        let fileSize = stat.size;
+        if(fileSize < 1024) {
+          fileSize = fileSize + 'B';
+        } else if(fileSize < 1024 * 1024) {
+          fileSize = (fileSize / 1024).toFixed(2) + 'KB';
+        } else if(fileSize < 1024 * 1024 * 1024) {
+          fileSize = (fileSize / 1024 / 1024).toFixed(2) + 'MB';
+        } else if(fileSize < 1024 * 1024 * 1024 * 1024) {
+          fileSize = (fileSize / 1024 / 1024 / 1024).toFixed(2) + 'GB';
+        } else {
+          fileSize = (fileSize / 1024 / 1024 / 1024 / 1024).toFixed(2) + 'TB';
+        }
+
+        list.push({
+          path: path.join(parentPath, file),
+          size: fileSize,
+        });
       }
     });
   }

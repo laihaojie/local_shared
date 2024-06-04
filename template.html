@@ -39,6 +39,11 @@
       width: 100%;
       height: 100%;
     }
+
+    #fileList span {
+      margin-left: 16px;
+      color: #999999;
+    }
   </style>
 </head>
 
@@ -62,7 +67,8 @@
           data.forEach(file => {
             const fileElement = document.createElement('div');
             fileElement.innerHTML = `
-          <a href="http://localhost:666/${file}" download="${file}">${file.replace('shared\\', '')}</a>
+          <a href="http://localhost:666/${file.path}" download="${file.path}">${file.path.replace('shared\\', '')}</a>
+          <span>${file.size}</span>
         `;
             fileList.appendChild(fileElement);
           });
