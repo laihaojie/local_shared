@@ -6,22 +6,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <style>
-    #uploadDom {
+    .info {
       margin-top: 10px;
-      width: 100px;
-      height: 100px;
-      border: 1px dashed #000;
-      font-size: 14px;
       display: flex;
       align-items: center;
+      gap: 30px;
+    }
+
+    pre {
+      font-size: 18px;
+    }
+
+    #uploadDom {
+      width: 132px;
+      height: 132px;
+      display: flex;
       justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 10px;
+      border: 1px dashed #0096FF;
+      color: #0096FF;
+      font-weight: bold;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #file {
+      display: none;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 
 <body>
   <a href="http://localhost:666">分享内网地址 http://localhost:666</a>
-  <div id="uploadDom">文件拖到 <br /> 此处上传</div>
+  <div class="info">
+    <div id="uploadDom">
+      点击或者拖拽文件 <br /> 到这里上传
+      <input type="file" name="file" id="file" accept="*/*">
+    </div>
+    <pre id="u_disk"></pre>
+  </div>
   <div style="margin-top: 12px;" id="fileList"></div>
   <script>
     function loadData() {
@@ -39,20 +68,40 @@
           });
         });
     }
-
     loadData();
+
 
     function uploadFile() {
       const uploadDom = document.getElementById('uploadDom');
-      uploadDom.addEventListener('dragover', (e) => {
-        e.preventDefault();
+      const fileDom = document.getElementById('file');
+      uploadDom.addEventListener('click', () => {
+        fileDom.value = null;
+        fileDom.click();
       });
-      uploadDom.addEventListener('drop', async (e) => {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        for (let i = 0; i < files.length; i++) {
+
+      fileDom.addEventListener('change', function () {
+        if (!fileDom.files[0]) return;
+        upload();
+      });
+
+      // 拖拽上传
+      uploadDom.addEventListener('dragover', function (event) {
+        event.preventDefault();
+
+      });
+
+      uploadDom.addEventListener('drop', function (event) {
+        fileDom.value = null;
+        event.preventDefault();
+        fileDom.files = event.dataTransfer.files;
+        if (!fileDom.files[0]) return;
+        upload();
+      });
+
+      async function upload() {
+        for (let i = 0; i < fileDom.files.length; i++) {
           const formData = new FormData();
-          formData.append('file', files[i]);
+          formData.append('file', fileDom.files[i]);
           await fetch('http://localhost:665', {
             method: 'POST',
             body: formData,
@@ -62,12 +111,22 @@
               loadData();
             });
         }
-      });
-    }
+      }
 
+    }
     uploadFile();
 
 
+    function getDisk() {
+      fetch('http://localhost:665/device', {
+        headers: {
+          "Content-Type": "application/json",
+        }
+      }).then(res => res.text()).then(res => {
+        u_disk.innerHTML = res;
+      })
+    }
+    getDisk();
   </script>
 </body>
 

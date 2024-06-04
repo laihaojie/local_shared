@@ -46,11 +46,6 @@ app.get('/', async (req, res) => {
 // 配置 multer 中间件
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // 目录不存在就创建
-    if (!fs.existsSync(output)) {
-      fs.mkdirSync(output);
-    }
-
     // 指定上传文件保存的目录
     cb(null, output);
   },
@@ -118,9 +113,8 @@ app.listen(PORT, () => {
   const indexContent = templateContent.replaceAll('localhost', ip)
   fs.writeFileSync(indexPath, indexContent);
 
-  const sharedPath = path.join(__dirname, 'shared');
-  if (!fs.existsSync(sharedPath)) {
-    fs.mkdirSync(sharedPath);
+  if (!fs.existsSync(output)) {
+    fs.mkdirSync(output);
   }
 
   exec('serve -p 666');
