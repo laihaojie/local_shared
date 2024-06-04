@@ -47,21 +47,24 @@
       uploadDom.addEventListener('dragover', (e) => {
         e.preventDefault();
       });
-      uploadDom.addEventListener('drop', (e) => {
+      uploadDom.addEventListener('drop', async (e) => {
         e.preventDefault();
         const files = e.dataTransfer.files;
-        const formData = new FormData();
         for (let i = 0; i < files.length; i++) {
+          const formData = new FormData();
           formData.append('file', files[i]);
+          await fetch('http://localhost:665', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'filename': files[i].name,
+            }
+          })
+            .then(response => response.json())
+            .then(data => {
+              loadData();
+            });
         }
-        fetch('http://localhost:665', {
-          method: 'POST',
-          body: formData
-        })
-          .then(response => response.json())
-          .then(data => {
-            loadData();
-          });
       });
     }
 
