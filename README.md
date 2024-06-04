@@ -8,12 +8,17 @@
 npm install -g degit serve
 ```
 
-## 第三步在合适的位置建一个空文件夹 进去运行 
+## 第三步在合适的位置建一个空文件夹 打开命令行运行 
 ```sh
 degit https://github.com/laihaojie/local_shared.git --force
 ```
 
-## 第四步
+## 第四步 安装依赖
+```sh
+npm install
+```
+
+## 第五步
 ```sh
 node server.js
 ```

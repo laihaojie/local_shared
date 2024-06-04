@@ -1,30 +1,90 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const exec = require('child_process').exec;
+const express = require('express')
+const process = require('process');
+const { execSync, exec } = require('child_process');
+const app = express()
+const multer = require('multer');
 const os = require('os');
+var cors = require('cors')
+const fs = require('fs')
+const path = require('path')
 
-const server = http.createServer((req, res) => {
-  // 解决跨域问题
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+const output = path.resolve('shared')
 
-  // 获取请求方法和请求路径
-  const { method, url } = req;
-  if (method === "GET" && url === "/") {
-    handleGet(req, res)
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.static('assets'))
+
+app.get('/', async (req, res) => {
+  // 获取当前目录路径
+  const directoryPath = __dirname;
+  const whiteFileList = ['index.html', 'server.js', 'start.bat', '.gitignore', '.gitattributes', 'template.html', 'README.md', 'package.json', 'package-lock.json']
+  const whiteFolderList = ['.git', 'node_modules']
+  const list = [];
+
+  // 递归读取文件夹下的所有文件
+  function readDirSync(dir, list, parentPath = '') {
+    const files = fs.readdirSync(dir);
+    files.forEach((file) => {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        if (whiteFolderList.includes(file)) return;
+        readDirSync(filePath, list, path.join(parentPath, file));
+      } else {
+        if (whiteFileList.includes(file)) return;
+        list.push(path.join(parentPath, file));
+      }
+    });
   }
 
-  if (method === "POST" && url === "/") {
-    handlePost(req, res)
+  readDirSync(directoryPath, list);
+  res.json(list);
+})
+
+
+// 配置 multer 中间件
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // 目录不存在就创建
+    if (!fs.existsSync(output)) {
+      fs.mkdirSync(output);
+    }
+
+    // 指定上传文件保存的目录
+    cb(null, output);
+  },
+  filename: function (req, file, cb) {
+    // 指定上传文件的文件名
+    cb(null, file.originalname);
   }
-
-
 });
 
+const upload = multer({ storage: storage });
+
+app.post('/', upload.single('file'), async function (req, res) {
+  res.json({ message: '上传成功', data: req.file.originalname });
+})
+
+app.get('/device', async (req, res) => {
+  // 获取当前服务器的设备信息 磁盘大小  不是docker的
+  let cmd = "df -h"
+  let result = execSync(cmd, { encoding: 'utf8' }).toString()
+  res.send(result)
+})
+
+
+// 处理未捕获的异常
+process.on('uncaughtException', (err) => {
+  console.error('uncaughtException', err)
+})
+
+process.on('unhandledRejection', (err) => {
+  console.error('unhandledRejection', err)
+})
+
 const PORT = 665;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 
   let ip = '';
@@ -64,71 +124,4 @@ server.listen(PORT, () => {
   }
 
   exec('serve -p 666');
-});
-
-
-function handleGet(req, res) {
-  // 获取当前目录路径
-  const directoryPath = __dirname;
-  const whiteFileList = ['index.html', 'server.js', 'start.bat', '.gitignore', '.gitattributes', 'template.html', 'README.md']
-  const whiteFolderList = ['.git']
-  const list = [];
-
-  // 递归读取文件夹下的所有文件
-  function readDirSync(dir, list, parentPath = '') {
-    const files = fs.readdirSync(dir);
-    files.forEach((file) => {
-      const filePath = path.join(dir, file);
-      const stat = fs.statSync(filePath);
-      if (stat && stat.isDirectory()) {
-        if (whiteFolderList.includes(file)) return;
-        readDirSync(filePath, list, path.join(parentPath, file));
-      } else {
-        if (whiteFileList.includes(file)) return;
-        list.push(path.join(parentPath, file));
-      }
-    });
-  }
-
-  readDirSync(directoryPath, list);
-
-  // 设置响应头并发送文件列表给客户端
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-
-
-  res.end(JSON.stringify(list));
-
-}
-
-function handlePost(req, res) {
-  let body = '';
-  req.on('data', chunk => {
-    body += chunk;
-  });
-
-  req.on('end', () => {
-    const boundary = req.headers['content-type'].split('; ')[1].replace('boundary=', '');
-    const parts = body.split('--' + boundary).filter(part => part.trim() !== '' && part.trim() !== '--');
-
-    const fileDir = path.join(__dirname, 'shared');
-
-    if (!fs.existsSync(fileDir)) {
-      fs.mkdirSync(fileDir);
-    }
-
-    parts.forEach(part => {
-      const contentDisposition = part.split('\r\n')[1];
-      const content = part.split('\r\n\r\n')[1];
-      const fileName = contentDisposition.match(/filename="(.+?)"/)[1];
-      const fileContent = content.split('\r\n')[0];
-
-
-      const filePath =  path.join(fileDir, fileName);
-      fs.writeFileSync(filePath, fileContent, 'binary');
-    });
-
-    // 返回json数据
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: '上传成功' }));
-  });
-}
+})

@@ -56,9 +56,6 @@
           await fetch('http://localhost:665', {
             method: 'POST',
             body: formData,
-            headers: {
-              'filename': files[i].name,
-            }
           })
             .then(response => response.json())
             .then(data => {
