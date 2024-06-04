@@ -24,41 +24,50 @@
   <div id="uploadDom">文件拖到 <br /> 此处上传</div>
   <div style="margin-top: 12px;" id="fileList"></div>
   <script>
-    const fileList = document.getElementById('fileList');
-    fetch('http://localhost:665')
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(file => {
-          const fileElement = document.createElement('div');
-          fileElement.innerHTML = `
-          <a href="http://localhost:666/${file}" download="${file}">${file.replace('shared\\', '')}</a>
-        `;
-          fileList.appendChild(fileElement);
-        });
-      });
-
-
-
-    const uploadDom = document.getElementById('uploadDom');
-    uploadDom.addEventListener('dragover', (e) => {
-      e.preventDefault();
-    });
-    uploadDom.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const files = e.dataTransfer.files;
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append('file', files[i]);
-      }
-      fetch('http://localhost:665', {
-        method: 'POST',
-        body: formData
-      })
+    function loadData() {
+      const fileList = document.getElementById('fileList');
+      fileList.innerHTML = '';
+      fetch('http://localhost:665')
         .then(response => response.json())
         .then(data => {
-          // window.location.reload();
+          data.forEach(file => {
+            const fileElement = document.createElement('div');
+            fileElement.innerHTML = `
+          <a href="http://localhost:666/${file}" download="${file}">${file.replace('shared\\', '')}</a>
+        `;
+            fileList.appendChild(fileElement);
+          });
         });
-    });
+    }
+
+    loadData();
+
+    function uploadFile() {
+      const uploadDom = document.getElementById('uploadDom');
+      uploadDom.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      uploadDom.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+          formData.append('file', files[i]);
+        }
+        fetch('http://localhost:665', {
+          method: 'POST',
+          body: formData
+        })
+          .then(response => response.json())
+          .then(data => {
+            loadData();
+          });
+      });
+    }
+
+    uploadFile();
+
+
   </script>
 </body>
 

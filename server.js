@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
     handleGet(req, res)
   }
 
-  if(method === "POST" && url === "/") {
+  if (method === "POST" && url === "/") {
     handlePost(req, res)
   }
 
@@ -100,4 +100,35 @@ function handleGet(req, res) {
 
 }
 
-function handlePost(req, res) {}
+function handlePost(req, res) {
+  let body = '';
+  req.on('data', chunk => {
+    body += chunk;
+  });
+
+  req.on('end', () => {
+    const boundary = req.headers['content-type'].split('; ')[1].replace('boundary=', '');
+    const parts = body.split('--' + boundary).filter(part => part.trim() !== '' && part.trim() !== '--');
+
+    const fileDir = path.join(__dirname, 'shared');
+
+    if (!fs.existsSync(fileDir)) {
+      fs.mkdirSync(fileDir);
+    }
+
+    parts.forEach(part => {
+      const contentDisposition = part.split('\r\n')[1];
+      const content = part.split('\r\n\r\n')[1];
+      const fileName = contentDisposition.match(/filename="(.+?)"/)[1];
+      const fileContent = content.split('\r\n')[0];
+
+
+      const filePath =  path.join(fileDir, fileName);
+      fs.writeFileSync(filePath, fileContent, 'binary');
+    });
+
+    // 返回json数据
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: '上传成功' }));
+  });
+}
