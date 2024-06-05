@@ -24,8 +24,6 @@ app.get('/', async (req, res) => {
 app.get('/list', async (req, res) => {
   // 获取当前目录路径
   const directoryPath = output;
-  const whiteFileList = ['index.html', 'server.js', 'start.bat', '.gitignore', '.gitattributes', 'template.html', 'README.md', 'package.json', 'package-lock.json']
-  const whiteFolderList = ['.git', 'node_modules']
   const list = [];
 
   // 递归读取文件夹下的所有文件
@@ -35,11 +33,8 @@ app.get('/list', async (req, res) => {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
       if (stat && stat.isDirectory()) {
-        if (whiteFolderList.includes(file)) return;
         readDirSync(filePath, list, path.join(parentPath, file));
       } else {
-        if (whiteFileList.includes(file)) return;
-
         // 获取文件大小 格式化为 KB MB GB TB
         let fileSize = stat.size;
         if (fileSize < 1024) {
@@ -83,6 +78,13 @@ const upload = multer({ storage: storage });
 
 app.post('/upload', upload.single('file'), async function (req, res) {
   res.json({ message: '上传成功', data: req.file.originalname });
+})
+
+app.post('/delete', async (req, res) => {
+  const { name } = req.body;
+  const filePath = path.join(output, name.replace('shared', ''));
+  fs.unlinkSync(filePath);
+  res.json({ message: '删除成功' + name });
 })
 
 app.get('/device', async (req, res) => {

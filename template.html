@@ -44,6 +44,14 @@
       margin-left: 16px;
       color: #999999;
     }
+
+    #fileList .del {
+      cursor: pointer;
+      display: none;
+    }
+    #fileList div:hover .del {
+      display: inline;
+    }
   </style>
 </head>
 
@@ -69,7 +77,21 @@
             fileElement.innerHTML = `
           <a href="http://localhost:666/${file.path}" download="${file.path}">${file.path.replace('shared\\', '')}</a>
           <span>${file.size}</span>
+
+          <span class="del">X</span>
         `;
+            fileElement.querySelector('.del').addEventListener('click', () => {
+              // 确认删除
+              window.confirm(`确认删除${file.path}吗？`) && fetch(`http://localhost:666/delete`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: file.path })
+              })
+                .then(response => response.json()).then(data => { loadData(); });
+            });
+
             fileList.appendChild(fileElement);
           });
         });
