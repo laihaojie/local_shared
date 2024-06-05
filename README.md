@@ -1,19 +1,19 @@
 # 介绍
 
-## 第一步安装 
+## 第一步 安装node
 [nodejs](https://nodejs.org/en)
 
-## 第二步运行
+## 第二步 在合适的位置建一个空文件夹 打开命令行运行 
 ```sh
 git clone https://github.com/laihaojie/local_shared.git .
 ```
 
-## 第三步在合适的位置建一个空文件夹 打开命令行运行 
+## 第三步 安装依赖
 ```sh
 npm install
 ```
 
-## 第四步 安装依赖
+## 第四步 运行
 ```sh
 node server.js
 ```
