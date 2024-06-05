@@ -86,7 +86,10 @@ app.post('/upload', upload.single('file'), async function (req, res) {
 })
 
 app.get('/device', async (req, res) => {
-  // 获取当前服务器的设备信息 磁盘大小  不是docker的
+  if (process.platform === 'win32') {
+    res.send('')
+    return
+  }
   let cmd = "df -h"
   let result = execSync(cmd, { encoding: 'utf8' }).toString()
   res.send(result)
