@@ -13,17 +13,23 @@ const output = path.resolve('shared')
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(express.static('assets'))
+app.use('/shared', express.static(output))
+
 
 app.get('/', async (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'))
+})
+
+
+app.get('/list', async (req, res) => {
   // 获取当前目录路径
-  const directoryPath = __dirname;
+  const directoryPath = output;
   const whiteFileList = ['index.html', 'server.js', 'start.bat', '.gitignore', '.gitattributes', 'template.html', 'README.md', 'package.json', 'package-lock.json']
   const whiteFolderList = ['.git', 'node_modules']
   const list = [];
 
   // 递归读取文件夹下的所有文件
-  function readDirSync(dir, list, parentPath = '') {
+  function readDirSync(dir, list, parentPath = 'shared') {
     const files = fs.readdirSync(dir);
     files.forEach((file) => {
       const filePath = path.join(dir, file);
@@ -36,13 +42,13 @@ app.get('/', async (req, res) => {
 
         // 获取文件大小 格式化为 KB MB GB TB
         let fileSize = stat.size;
-        if(fileSize < 1024) {
+        if (fileSize < 1024) {
           fileSize = fileSize + 'B';
-        } else if(fileSize < 1024 * 1024) {
+        } else if (fileSize < 1024 * 1024) {
           fileSize = (fileSize / 1024).toFixed(2) + 'KB';
-        } else if(fileSize < 1024 * 1024 * 1024) {
+        } else if (fileSize < 1024 * 1024 * 1024) {
           fileSize = (fileSize / 1024 / 1024).toFixed(2) + 'MB';
-        } else if(fileSize < 1024 * 1024 * 1024 * 1024) {
+        } else if (fileSize < 1024 * 1024 * 1024 * 1024) {
           fileSize = (fileSize / 1024 / 1024 / 1024).toFixed(2) + 'GB';
         } else {
           fileSize = (fileSize / 1024 / 1024 / 1024 / 1024).toFixed(2) + 'TB';
@@ -75,7 +81,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.post('/', upload.single('file'), async function (req, res) {
+app.post('/upload', upload.single('file'), async function (req, res) {
   res.json({ message: '上传成功', data: req.file.originalname });
 })
 
@@ -96,7 +102,7 @@ process.on('unhandledRejection', (err) => {
   console.error('unhandledRejection', err)
 })
 
-const PORT = 665;
+const PORT = 666;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 
@@ -135,5 +141,5 @@ app.listen(PORT, () => {
     fs.mkdirSync(output);
   }
 
-  exec('serve -p 666');
+  // exec('serve -p 666');
 })

@@ -61,7 +61,7 @@
     function loadData() {
       const fileList = document.getElementById('fileList');
       fileList.innerHTML = '';
-      fetch('http://localhost:665')
+      fetch('http://localhost:666/list')
         .then(response => response.json())
         .then(data => {
           data.forEach(file => {
@@ -108,7 +108,7 @@
         for (let i = 0; i < fileDom.files.length; i++) {
           const formData = new FormData();
           formData.append('file', fileDom.files[i]);
-          await fetch('http://localhost:665', {
+          await fetch('http://localhost:666/upload', {
             method: 'POST',
             body: formData,
           })
@@ -124,7 +124,7 @@
 
 
     function getDisk() {
-      fetch('http://localhost:665/device', {
+      fetch('http://localhost:666/device', {
         headers: {
           "Content-Type": "application/json",
         }
